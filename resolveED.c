@@ -38,12 +38,12 @@ void printaEdoSL(real_t *diagInf, real_t *diag, real_t *diagSup, real_t *termsi,
 void printaEdpSL(real_t *diagInfInf, real_t *diagInf, real_t *diag, real_t *diagSup, real_t *diagSupSup, real_t *termsi, int n, real_t *T, real_t normaL2) {
     printf("SL:\n");
 
-    for(int i = 0; i < n - 1; i++) {
+    for(int i = 0; i < n; i++) {
         printf("     %f ", diagSupSup[i]);
     }
     printf("\n");
 
-    for(int i = 0; i < n - 1; i++) {
+    for(int i = 0; i < n; i++) {
         printf("   %f ", diagSup[i]);
     }
     printf("\n");
@@ -53,12 +53,12 @@ void printaEdpSL(real_t *diagInfInf, real_t *diagInf, real_t *diag, real_t *diag
     }
     printf("\n");
 
-    for(int i = 0; i < n - 1; i++) {
+    for(int i = 0; i < n; i++) {
         printf("  %f ", diagInf[i]);
     }
     printf("\n");
 
-    for(int i = 0; i < n - 1; i++) {
+    for(int i = 0; i < n; i++) {
         printf("     %f ", diagInfInf[i]);
     }
     printf("\n");
