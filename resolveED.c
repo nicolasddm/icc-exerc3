@@ -65,6 +65,52 @@ void resolveED (Edo *edoeq, real_t *Y) {
     printaEdoSL(diagInf, diag, diagSup, termsi, n, Y, normaL2);
 }
 
+real_t getInternPoint(int i, Edp *edpEq, real_t Hx, real_t Hy) {
+    int multX = (i + 1) % edpEq->nX;
+    int adjY = 1;
+    if(((i + 1) % edpEq->nX) == 0){
+        int multX = edpEq->nX;
+        int adjY = 0;
+    }
+    real_t someX = edpEq->aX + (multX * Hx);
+    real_t someY = edpEq->aY + ((floor(i + 1 / edpEq->nX) + adjY) * Hy) ;
+
+    return someX + someY;
+}
+
+void resolveEDP (Edp *edpEq, real_t *T) {
+    int n = edpEq->nX * edpEq->nY;
+
+    real_t Hx, Hy, xi, yi;
+    real_t *termsi = malloc(sizeof(real_t) * n);
+    real_t *diag = malloc(sizeof(real_t) * n);
+    real_t *diagInf = malloc(sizeof(real_t) * n);
+    real_t *diagSup = malloc(sizeof(real_t) * n);
+    real_t *diagInfInf = malloc(sizeof(real_t) * n);
+    real_t *diagSupSup = malloc(sizeof(real_t) * n);
+    
+    Hx = (edpEq->bX - edpEq->aX) / (edpEq->nX + 1);
+    Hy = (edpEq->bY - edpEq->aY) / (edpEq->nY + 1);
+    printf("Hx = %f, Hy = %f\n", Hx, Hy);
+
+    for (int k = 0; k < 50; ++k) { // adicionar a condição de parada;
+        for (int i = 0; i < n; ++i) {
+            xi = getInternPoint(i, edpEq, Hx, Hy);
+    //         termsi[i] = h*h * edoeq->r(xi);
+    //         diagInf[i] = 1 - h * edoeq->p(xi) / 2.0;
+    //         diag[i] = -2 + h*h * edoeq->q(xi);
+    //         diagSup[i] =  1 + h * edoeq->p(xi) / 2.0;
+
+    //         if (i == 0) termsi[i] -= diagSup[i] * Y[i+1] + edoeq->ya * (1 - h * edoeq->p(edoeq->a + h) / 2.0);
+    //         else if (i == n-1) termsi[i] -= diagInf[i] * Y[i-1] - edoeq->yb * (1 + h * edoeq->p(edoeq->b - h) / 2.0);
+    //         else termsi[i] -= diagSup[i] * Y[i+1] + diagInf[i] * Y[i-1];
+
+    //         Y[i] = termsi[i] / diag[i];
+        }
+    }
+    // real_t normaL2 = 0;
+}
+
 Edo* alocaEdoA(int malha) {
     Edo *edoeq = (Edo *) malloc(sizeof(Edo));
     edoeq->n = malha;
@@ -77,6 +123,47 @@ Edo* alocaEdoA(int malha) {
     edoeq->p = *functionAP;
     edoeq->q = *functionAQ;
     edoeq->r = *functionAR;
+
+    return edoeq;
+}
+
+Edp* alocaEdpB(int malha) {
+    Edp *edpEq = (Edp *) malloc(sizeof(Edp));
+
+    edpEq->nX = malha;
+    edpEq->nY = 3;
+    
+    edpEq->aX = 0;
+    edpEq->bX = 6;
+
+    edpEq->aY = 0;
+    edpEq->bY = 8;
+
+    edpEq->uaX = 20;
+    edpEq->ubX = 45;
+    edpEq->uaY = 0;
+    edpEq->ubY = 100;
+
+    edpEq->pX = *functionBPX;
+    edpEq->pY = *functionBPY;
+    edpEq->q = *functionBQ;
+    edpEq->r = *functionBR;
+
+    return edpEq;
+}
+
+Edo* alocaEdoC(int malha) {
+    Edo *edoeq = (Edo *) malloc(sizeof(Edo));
+    edoeq->n = malha;
+
+    edoeq->a = 0.0;
+    edoeq->b = 1.0;
+    edoeq->ya = 0;
+    edoeq->yb = 1;
+
+    edoeq->p = *functionCP;
+    edoeq->q = *functionCQ;
+    edoeq->r = *functionCR;
 
     return edoeq;
 }
