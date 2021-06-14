@@ -35,6 +35,48 @@ void printaEdoSL(real_t *diagInf, real_t *diag, real_t *diagSup, real_t *termsi,
     printf("Norma L2: %f, ", normaL2);
 }
 
+void printaEdpSL(real_t *diagInfInf, real_t *diagInf, real_t *diag, real_t *diagSup, real_t *diagSupSup, real_t *termsi, int n, real_t *T, real_t normaL2) {
+    printf("SL:\n");
+
+    for(int i = 0; i < n - 1; i++) {
+        printf("     %f ", diagSupSup[i]);
+    }
+    printf("\n");
+
+    for(int i = 0; i < n - 1; i++) {
+        printf("   %f ", diagSup[i]);
+    }
+    printf("\n");
+
+    for(int i = 0; i < n; i++) {
+        printf("%f ", diag[i]);
+    }
+    printf("\n");
+
+    for(int i = 0; i < n - 1; i++) {
+        printf("  %f ", diagInf[i]);
+    }
+    printf("\n");
+
+    for(int i = 0; i < n - 1; i++) {
+        printf("     %f ", diagInfInf[i]);
+    }
+    printf("\n");
+
+    for(int i = 0; i < n; i++) {
+        printf("%f ", termsi[i]);
+    }
+    printf("\n");
+
+    printf("Y: ");
+    for (int i = 0; i < n; ++i) {
+        printf("%f ", T[i]);
+    }
+    printf("\n");
+
+    printf("Norma L2: %f, ", normaL2);
+}
+
 void resolveED (Edo *edoeq, real_t *Y) {
     int n = edoeq->n;
     real_t h, xi, yi;
@@ -65,15 +107,34 @@ void resolveED (Edo *edoeq, real_t *Y) {
     printaEdoSL(diagInf, diag, diagSup, termsi, n, Y, normaL2);
 }
 
-real_t getInternPoint(int i, Edp *edpEq, real_t Hx, real_t Hy) {
-    int multX = (i + 1) % edpEq->nX;
+real_t getSomeX(int i, Edp *edpEq, real_t Hx) {
+    int multX = ((i + 1) % edpEq->nX);
+    if(((i + 1) % edpEq->nX) == 0){
+        multX = edpEq->nX;
+    }
+
+    real_t someX = edpEq->aX + (multX * Hx);
+
+    return someX;
+}
+
+real_t getSomeY(int i, Edp *edpEq, real_t Hy) {
     int adjY = 1;
     if(((i + 1) % edpEq->nX) == 0){
-        int multX = edpEq->nX;
-        int adjY = 0;
+        adjY = 0;
     }
-    real_t someX = edpEq->aX + (multX * Hx);
-    real_t someY = edpEq->aY + ((floor(i + 1 / edpEq->nX) + adjY) * Hy) ;
+
+    real_t someY = edpEq->aY + ((floor((i + 1) / edpEq->nX) + adjY) * Hy);
+
+    return someY;
+}
+
+real_t getInternPoint(int i, Edp *edpEq, real_t Hx, real_t Hy) {
+
+    real_t someX = getSomeX(i, edpEq, Hx);
+    real_t someY = getSomeY(i, edpEq, Hy);
+
+    printf("someX: %f, someY: %f \n", someX, someY);
 
     return someX + someY;
 }
@@ -96,19 +157,34 @@ void resolveEDP (Edp *edpEq, real_t *T) {
     for (int k = 0; k < 50; ++k) { // adicionar a condição de parada;
         for (int i = 0; i < n; ++i) {
             xi = getInternPoint(i, edpEq, Hx, Hy);
-    //         termsi[i] = h*h * edoeq->r(xi);
-    //         diagInf[i] = 1 - h * edoeq->p(xi) / 2.0;
-    //         diag[i] = -2 + h*h * edoeq->q(xi);
-    //         diagSup[i] =  1 + h * edoeq->p(xi) / 2.0;
+            termsi[i] = Hx*Hx * Hy*Hy * edpEq->r(xi);
+            diagInfInf[i] = Hx*Hx * edpEq->pX(xi);
+            diagInf[i] = Hy*Hy * edpEq->pY(xi);
+            diag[i] = -2 * (Hx*Hx + Hy*Hy) * edpEq->q(xi);
+            diagSup[i] = Hy*Hy * edpEq->pY(xi);
+            diagSupSup[i] = Hx*Hx * edpEq->pX(xi);
+            if (getSomeX(i, edpEq, Hx) == getSomeX(0, edpEq, Hx)) {
+                diagInf[i] = edpEq->uaY;
+            } else if (getSomeX(i, edpEq, Hx) == getSomeX(n-1, edpEq, Hx)) {
+                diagSup[i] = edpEq->ubY;
+            }
+            if (getSomeY(i, edpEq, Hy) == getSomeY(0, edpEq, Hy)) {
+                diagInfInf[i] = edpEq->uaX;
+            } else if(getSomeY(i, edpEq, Hy) == getSomeY(n-1, edpEq, Hy)) {
+                diagSupSup[i] = edpEq->ubX;
+            }
+            
 
     //         if (i == 0) termsi[i] -= diagSup[i] * Y[i+1] + edoeq->ya * (1 - h * edoeq->p(edoeq->a + h) / 2.0);
     //         else if (i == n-1) termsi[i] -= diagInf[i] * Y[i-1] - edoeq->yb * (1 + h * edoeq->p(edoeq->b - h) / 2.0);
     //         else termsi[i] -= diagSup[i] * Y[i+1] + diagInf[i] * Y[i-1];
 
-    //         Y[i] = termsi[i] / diag[i];
+            T[i] = termsi[i] / diag[i];
         }
     }
-    // real_t normaL2 = 0;
+
+    real_t normaL2 = 0;
+    printaEdpSL(diagInfInf, diagInf, diag, diagSup, diagSupSup, termsi, n, T, normaL2);
 }
 
 Edo* alocaEdoA(int malha) {

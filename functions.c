@@ -16,15 +16,15 @@ real_t functionAR(real_t x) {
 }
 
 real_t functionBPX(real_t x) {
-    return 0.0;
+    return 1.0;
 }
 
 real_t functionBPY(real_t x) {
-    return 0.0;
+    return 1.0;
 }
 
 real_t functionBQ(real_t x) {
-    return 1.5;
+    return 1.1;
 }
 
 real_t functionBR(real_t x) {
