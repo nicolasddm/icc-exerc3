@@ -164,20 +164,24 @@ void resolveEDP (Edp *edpEq, real_t *T) {
             diagSup[i] = Hy*Hy * edpEq->pY(xi);
             diagSupSup[i] = Hx*Hx * edpEq->pX(xi);
             if (getSomeX(i, edpEq, Hx) == getSomeX(0, edpEq, Hx)) {
-                diagInf[i] = edpEq->uaY;
+                diagInf[i] = 0.0;
+                termsi[i] -= edpEq->uaY;
             } else if (getSomeX(i, edpEq, Hx) == getSomeX(n-1, edpEq, Hx)) {
-                diagSup[i] = edpEq->ubY;
+                diagSup[i] = 0.0;
+                termsi[i] -= edpEq->ubY;
             }
             if (getSomeY(i, edpEq, Hy) == getSomeY(0, edpEq, Hy)) {
-                diagInfInf[i] = edpEq->uaX;
+                diagInfInf[i] = 0.0;
+                termsi[i] -= edpEq->uaX;
             } else if(getSomeY(i, edpEq, Hy) == getSomeY(n-1, edpEq, Hy)) {
-                diagSupSup[i] = edpEq->ubX;
+                diagSupSup[i] = 0.0;
+                termsi[i] -= edpEq->ubX;
             }
             
 
-    //         if (i == 0) termsi[i] -= diagSup[i] * Y[i+1] + edoeq->ya * (1 - h * edoeq->p(edoeq->a + h) / 2.0);
-    //         else if (i == n-1) termsi[i] -= diagInf[i] * Y[i-1] - edoeq->yb * (1 + h * edoeq->p(edoeq->b - h) / 2.0);
-    //         else termsi[i] -= diagSup[i] * Y[i+1] + diagInf[i] * Y[i-1];
+            // if (i == 0) termsi[i] -= diagSup[i] * Y[i+1] + edoeq->ya * (1 - h * edoeq->p(edoeq->a + h) / 2.0);
+            // else if (i == n-1) termsi[i] -= diagInf[i] * Y[i-1] - edoeq->yb * (1 + h * edoeq->p(edoeq->b - h) / 2.0);
+            // else termsi[i] -= diagSup[i] * Y[i+1] + diagInf[i] * Y[i-1];
 
             T[i] = termsi[i] / diag[i];
         }
